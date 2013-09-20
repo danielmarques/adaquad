@@ -3,10 +3,13 @@
 
 //Functions to be the target of the integration operation
 
-double linearFunction(double x);
+double linear_function(double x);
 
-double quadraticFunction(double x);
+double quadratic_function(double x);
 
-double cubicFunction(double x);
+double cubic_function(double x);
+
+//Function to calculate the area of the trapezoid
+double calc_trapezoid_area(double base1, double base2, double height);
 
 #endif

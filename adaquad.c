@@ -2,7 +2,7 @@
 #include "adaquad.h"
 
 
-double linearFunction(double x)
+double linear_function(double x)
 {
 	double parameter1 = 4;
 	double parameter0 = 2;
@@ -10,7 +10,7 @@ double linearFunction(double x)
 	return parameter1*x + parameter0;	
 }
 
-double quadraticFunction(double x)
+double quadratic_function(double x)
 {
 	double parameter2 = 8;
 	double parameter1 = 4;
@@ -19,7 +19,7 @@ double quadraticFunction(double x)
 	return parameter2*x*x + parameter1*x + parameter0;
 }
 
-double cubicFunction(double x)
+double cubic_function(double x)
 {
 	double parameter3 = 16;
 	double parameter2 = 8;
@@ -27,4 +27,9 @@ double cubicFunction(double x)
 	double parameter0 = 2;
 
 	return parameter3*x*x*x + parameter2*x*x + parameter1*x + parameter0;
+}
+
+double calc_trapezoid_area(double base1, double base2, double height)
+{
+	return ((base1 + base2)*height) / 2;
 }
