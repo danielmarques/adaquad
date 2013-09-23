@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <pthread.h>
 #include "adaquad.h"
 
 //Functions
@@ -41,32 +43,49 @@ double calc_trapezoid_area(double base1, double base2, double height)
 //First Variant: each thread computes a subinterval for which will be responsible and calculates the result for this entire subinterval. When all threads have finished, the main thread should show the end result.
 
 //ptheads implementation
-int aq_static_administrator_pthread(int num_tasks, double left_limit, double right_limit, void *function)
+void aq_static_administrator_sem_pthread(int num_threads, double left_limit, double right_limit, void *function)
 {
 
-	//divide em tantos subintervalos quanto for o numero de threads (num_tasks)
+	int i = 0;
+	double interval_length = 0;
+	static_worker_sem_thread_arg *arguments = NULL;
+	pthread_t threads[num_threads];
 
-	//repassa cada subintervalo para uma thread (cada thread vai ter um fila dela internamente)
+	//Calculates the length of the interval
+	interval_length = (right_limit - left_limit) / num_threads;
+
+	//Divide in a number of intervals equal to num_threads
+	for (i = 0; i < num_threads; ++i)
+	{
+		arguments = (static_worker_sem_thread_arg*) malloc(sizeof(static_worker_sem_thread_arg));
+		arguments->left_limit = left_limit + i*interval_length;
+		arguments->right_limit = arguments->left_limit + interval_length;
+		arguments->function = function;
+
+		pthread_create(&threads[i], NULL, aq_static_worker_sem_pthread, (void*) arguments);
+
+	}
+
+	//Repassa cada subintervalo para uma thread (cada thread vai ter um fila dela internamente)
 
 	//recupera o resultado final e consolida (fila de resultados igual a da outra versão)
-	return 0;
 }
 
-int aq_static_worker_pthread()
+void* aq_static_worker_sem_pthread(void *arguments)
 {
 	//calcula a diferenca entre a area maior e as duas menores
 	//se estiver abaixo da tolerancia manda para fila de resultados
 	//se não divide em subtarefas e manda para sua propria fila de tarefas
-	return 0;
+	return NULL;
 }
 
 //openmp implementation
-int aq_static_administrator_openmp(int num_tasks, double left_limit, double right_limit, void *function)
+void aq_static_administrator_sem_openmp(int num_tasks, double left_limit, double right_limit, void *function)
 {
-	return 0;
+
 }
 
-int aq_static_worker_openmp()
+void* aq_static_worker_sem_openmp(void *arguments)
 {
-	return 0;
+	return NULL;
 }
