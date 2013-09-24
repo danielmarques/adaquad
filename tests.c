@@ -5,9 +5,12 @@
 
 #define TOLERANCE 1e-20
 #define NUM_THREADS 10
+#define NUM_TASKS 12
 
 int main()
 {
+    long double ret = 0.0L;
+
  // double (*target_function) (double);
 
  //    printf( "\n" );
@@ -80,7 +83,13 @@ int main()
     // printf( "End: Queue test.\n" );
     // printf( "\n" );
 
-    aq_static_administrator_sem_pthread(NUM_THREADS, 0, 1, TOLERANCE, &quadratic_function);
+    printf("Static: \n");
+    ret = aq_static_administrator_sem_pthread(NUM_THREADS, -0.1, 0, TOLERANCE, &quadratic_function);
+    printf("Integral: %Le\n", ret);
+
+    printf("Dynamic: \n");
+    ret = aq_dynamic_administrator_sem_pthread(NUM_TASKS, NUM_THREADS, -0.1, 0, TOLERANCE, &quadratic_function);
+    printf("Integral: %Le\n", ret);
 
     return 0;
 }
