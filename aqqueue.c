@@ -13,7 +13,7 @@ queue* queue_initialize()
     return q;
 }
 
-interval* interval_initialize(double left_limit, double right_limit, double f_left_limit, double f_right_limit, double area)
+interval* interval_initialize(long double left_limit, long double right_limit, long double f_left_limit, long double f_right_limit, long double area)
 {
 	interval *i = (interval*) malloc(sizeof(interval));
     i->left_limit = left_limit;

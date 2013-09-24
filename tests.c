@@ -3,7 +3,8 @@
 #include "adaquad.h"
 #include "aqqueue.h"
 
-#define TOLERANCE 0.00000000000000000001 //1e-20 
+#define TOLERANCE 1e-20
+#define NUM_THREADS 10
 
 int main()
 {
@@ -79,7 +80,7 @@ int main()
     // printf( "End: Queue test.\n" );
     // printf( "\n" );
 
-    aq_static_administrator_sem_pthread(2, 0, 1000, TOLERANCE, &quadratic_function);
+    aq_static_administrator_sem_pthread(NUM_THREADS, 0, 1, TOLERANCE, &quadratic_function);
 
     return 0;
 }

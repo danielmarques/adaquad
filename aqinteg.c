@@ -5,7 +5,7 @@
 
 int main()
 {
-	double (*target_function) (double);
+	long double (*target_function) (long double);
 	target_function = &linear_function;
 
     return 0;
