@@ -3,6 +3,8 @@
 #include "adaquad.h"
 #include "aqqueue.h"
 
+#define TOLERANCE 0.00000000000000000001 //1e-20 
+
 int main()
 {
  // double (*target_function) (double);
@@ -31,51 +33,53 @@ int main()
 
  //    printf( "\n" );
 
-    int k = 0;
-    queue *q = NULL;
-    interval *i = NULL ;
+    // int k = 0;
+    // queue *q = NULL;
+    // interval *i = NULL;
     
-    printf( "Begin: Queue test.\n" );
+    // printf( "Begin: Queue test.\n" );
     
-    q = queue_initialize();
+    // q = queue_initialize();
 
-    for (k = 1; k <= 10; ++k)
-    {
+    // for (k = 1; k <= 10; ++k)
+    // {
  
-        i = interval_initialize(k, k+1, 0);
-        printf("Intervalo %i: %f-%f\n", k, i->initial_point, i->final_point);
+    //     i = interval_initialize(k, k+1, 0);
+    //     printf("Intervalo %i: %f-%f\n", k, i->initial_point, i->final_point);
 
-        emqueue(q, i);
+    //     emqueue(q, i);
 
-        printf("Fila %i: %f-%f\n", k, q->first->initial_point, q->last->final_point);
-    }
+    //     printf("Fila %i: %f-%f\n", k, q->first->initial_point, q->last->final_point);
+    // }
 
-    printf("#################################\n");
+    // printf("#################################\n");
 
-    for (k = 1; k <= 11; ++k)
-    {
+    // for (k = 1; k <= 11; ++k)
+    // {
  
-        i = dequeue(q);
+    //     i = dequeue(q);
 
-        if (i == NULL) {
+    //     if (i == NULL) {
 
-            printf("Fila %i: vazia\n", k);
+    //         printf("Fila %i: vazia\n", k);
 
-        } else {
+    //     } else {
 
-            printf("Intervalo %i: %f-%f\n", k, i->initial_point, i->final_point);
-            if (q->first != NULL) {
+    //         printf("Intervalo %i: %f-%f\n", k, i->initial_point, i->final_point);
+    //         if (q->first != NULL) {
 
-                printf("Fila %i: %f-%f\n", k, q->first->initial_point, q->last->final_point);
-            } else {
+    //             printf("Fila %i: %f-%f\n", k, q->first->initial_point, q->last->final_point);
+    //         } else {
 
-                printf("Fila %i: vazia\n", k);
-            }           
-        }
-    }
+    //             printf("Fila %i: vazia\n", k);
+    //         }           
+    //     }
+    // }
 
-    printf( "End: Queue test.\n" );
-    printf( "\n" ); 
+    // printf( "End: Queue test.\n" );
+    // printf( "\n" );
+
+    aq_static_administrator_sem_pthread(2, 0, 1000, TOLERANCE, &quadratic_function);
 
     return 0;
 }

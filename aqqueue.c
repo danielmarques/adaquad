@@ -13,11 +13,13 @@ queue* queue_initialize()
     return q;
 }
 
-interval* interval_initialize(double initial_point, double final_point, double area)
+interval* interval_initialize(double left_limit, double right_limit, double f_left_limit, double f_right_limit, double area)
 {
 	interval *i = (interval*) malloc(sizeof(interval));
-    i->initial_point = initial_point;
-    i->final_point = final_point;
+    i->left_limit = left_limit;
+    i->right_limit = right_limit;
+    i->f_left_limit = f_left_limit;
+    i->f_right_limit = f_right_limit;
     i->area = area;
     i->next = NULL;
 
@@ -44,15 +46,14 @@ void emqueue(queue* q, interval* new_interval)
 //Get the next element of the queue
 interval* dequeue(queue* q)
 {
-	interval *ret;
+	interval *ret = NULL;
 
 	//If the queue is NOT empty 
 	if (q->first != NULL) {
 
 		ret = q->first;
 		q->first = q->first->next;
-		return ret;
 	}
 
-	return NULL;
+	return ret;
 }

@@ -6,8 +6,10 @@
 //Elements of the queue
 typedef struct _interval interval ;
 struct _interval {
-	double initial_point;
-	double final_point;
+	double left_limit;
+	double right_limit;
+	double f_left_limit;
+	double f_right_limit;
 	double area;
 	interval *next;
 };
@@ -25,6 +27,6 @@ interval* dequeue(queue* q);
 
 queue* queue_initialize();
 
-interval* interval_initialize(double initial_point, double final_point, double area);
+interval* interval_initialize(double left_limit, double right_limit, double f_left_limit, double f_right_limit, double area);
 
 #endif
