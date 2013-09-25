@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "mon_adaquad.h"
+#include "sem_adaquad.h"
 #include "adaquad.h"
-#include "aqqueue.h"
+//#include "aqqueue.h"
 
 #define TOLERANCE 1e-20
 #define NUM_THREADS 10
@@ -82,6 +84,23 @@ int main()
 
     // printf( "End: Queue test.\n" );
     // printf( "\n" );
+
+    // printf("Static: \n");
+    // ret = aq_static_administrator_sem_pthread(NUM_THREADS, -0.1, 0, TOLERANCE, &quadratic_function);
+    // printf("Integral: %Le\n", ret);
+
+    // printf("Dynamic: \n");
+    // ret = aq_dynamic_administrator_sem_pthread(NUM_TASKS, NUM_THREADS, -0.1, 0, TOLERANCE, &quadratic_function);
+    // printf("Integral: %Le\n", ret);
+
+
+    // printf("Static: \n");
+    // ret = aq_static_administrator_mon_pthread(NUM_THREADS, -0.1, 0, TOLERANCE, &quadratic_function);
+    // printf("Integral: %Le\n", ret);
+
+    // printf("Dynamic: \n");
+    // ret = aq_dynamic_administrator_mon_pthread(NUM_TASKS, NUM_THREADS, -0.1, 0, TOLERANCE, &quadratic_function);
+    // printf("Integral: %Le\n", ret);
 
     printf("Static: \n");
     ret = aq_static_administrator_sem_pthread(NUM_THREADS, -0.1, 0, TOLERANCE, &quadratic_function);
