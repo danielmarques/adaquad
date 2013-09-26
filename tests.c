@@ -1,17 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "mon_adaquad.h"
 #include "sem_adaquad.h"
+#include "omp_adaquad.h"
 #include "adaquad.h"
-//#include "aqqueue.h"
 
 #define TOLERANCE 1e-20
-#define NUM_THREADS 10
-#define NUM_TASKS 12
+#define NUM_THREADS 8
+#define NUM_TASKS 10
 
 int main()
 {
     long double ret = 0.0L;
+    clock_t begin, end;
+    double time_spent;
 
  // double (*target_function) (double);
 
@@ -103,12 +106,20 @@ int main()
     // printf("Integral: %Le\n", ret);
 
     printf("Static: \n");
-    ret = aq_static_administrator_sem_pthread(NUM_THREADS, -0.1, 0, TOLERANCE, &quadratic_function);
-    printf("Integral: %Le\n", ret);
+    begin = clock();
+    ret = aq_static_administrator_omp(NUM_THREADS, 0, 1, TOLERANCE, &cubic_function);
+    end = clock();
+    time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+    printf("Integral value: %Le\n", ret);
+    printf("Time spent: %f seconds\n", time_spent);
 
     printf("Dynamic: \n");
-    ret = aq_dynamic_administrator_sem_pthread(NUM_TASKS, NUM_THREADS, -0.1, 0, TOLERANCE, &quadratic_function);
-    printf("Integral: %Le\n", ret);
+    begin = clock();
+    ret = aq_dynamic_administrator_omp(NUM_TASKS, NUM_THREADS, 0, 1, TOLERANCE, &cubic_function);
+    end = clock();
+    time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+    printf("Integral value: %Le\n", ret);
+    printf("Time spent: %f\n seconds", time_spent);
 
     return 0;
 }

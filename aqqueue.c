@@ -13,6 +13,29 @@ queue* queue_initialize()
     return q;
 }
 
+void queue_finalize(queue *q)
+{
+	interval *ret = NULL;
+
+	if (q != NULL)
+	{
+		while (q->first != NULL)
+		{
+			ret = q->first;
+			q->first = q->first->next;			
+
+			if (q->first == NULL)
+			{
+				q->last = NULL;
+			}
+
+			free(ret);
+		}
+
+		free(q);
+	}
+}
+
 interval* interval_initialize(long double left_limit, long double right_limit, long double f_left_limit, long double f_right_limit, long double area)
 {
 	interval *i = (interval*) malloc(sizeof(interval));
@@ -34,6 +57,7 @@ void emqueue(queue* q, interval* new_interval)
 
 		q->first = new_interval;
 		q->last = new_interval;
+		q->last->next = NULL;
 
 	} else {
 
@@ -53,6 +77,11 @@ interval* dequeue(queue* q)
 
 		ret = q->first;
 		q->first = q->first->next;
+
+		if (q->first == NULL)
+		{
+			q->last = NULL;
+		}
 	}
 
 	return ret;

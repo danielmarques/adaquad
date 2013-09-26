@@ -17,4 +17,6 @@ interval* sem_dequeue(sem_queue* q);
 
 sem_queue* sem_queue_initialize();
 
+void sem_queue_finalize(sem_queue* q);
+
 #endif

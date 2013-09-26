@@ -22,17 +22,23 @@ sem_queue *shared_result_queue, *shared_work_queue;
 long double aq_static_administrator_sem_pthread(int num_threads, long double left_limit, long double right_limit, long double tolerance, long double (*calc_function) (long double))
 {
 
-	int i = 0, num_threads_ended = 0;
+	int i = 0, rc = 0;
 	long double interval_length = 0, final_area = 0;
 	interval *finished_interval = NULL;
 	static_worker_thread_arg *arguments = NULL;
 	pthread_t threads[num_threads];
+	pthread_attr_t attr;
+	void *status;
 
 	//Initialize the queue that will receve the results from the worker threads
 	shared_result_queue = sem_queue_initialize();
 
 	//Calculates the length of the interval
 	interval_length = (right_limit - left_limit) / num_threads;
+
+	//Initialize and set thread detached attribute
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
 	//Divide in a number of intervals equal to num_threads
 	//Passes each interval to a thread (each thread will have an internal queue)
@@ -43,23 +49,32 @@ long double aq_static_administrator_sem_pthread(int num_threads, long double lef
 		arguments->right_limit = arguments->left_limit + interval_length;
 		arguments->tolerance = tolerance;
 		arguments->calc_function = calc_function;
-		pthread_create(&threads[i], NULL, aq_static_worker_sem_pthread, (void*) arguments);
+		pthread_create(&threads[i], &attr, aq_static_worker_sem_pthread, (void*) arguments);
 	}
 
-	//Gets and consolidates the result
-	while(num_threads_ended < num_threads) 
+	//Free attribute and wait for the other threads
+	pthread_attr_destroy(&attr);
+	for(i = 0; i < num_threads; i++)
 	{
-		finished_interval = sem_dequeue(shared_result_queue);
+		rc = pthread_join(threads[i], &status);
 
-		if (finished_interval != NULL)
+		if (rc) 
 		{
-			final_area = final_area + finished_interval->area;
-			free(finished_interval);
-			num_threads_ended = num_threads_ended + 1;
+			 printf("ERROR; return code from pthread_join() is %d\n", rc);
+			 exit(-1);
 		}
 	}
 
-	free(shared_result_queue);
+	//Gets and consolidates the result
+	finished_interval = sem_dequeue(shared_result_queue);
+	while(finished_interval != NULL) 
+	{
+		final_area = final_area + finished_interval->area;
+		free(finished_interval);
+		finished_interval = sem_dequeue(shared_result_queue);
+	}
+
+	sem_queue_finalize(shared_result_queue);
 	return 	final_area;
 }
 
@@ -102,7 +117,6 @@ void* aq_static_worker_sem_pthread(void *arguments)
 
         while (work_interval != NULL)
         {
-        	//printf("%Lf\n", work_interval->right_limit);
         	//Calculates the diference between the big area and the sum of the smaller areas
 			mid_point = (work_interval->right_limit + work_interval->left_limit) / 2;
 			f_mid_point = t_arguments->calc_function(mid_point);
@@ -128,14 +142,14 @@ void* aq_static_worker_sem_pthread(void *arguments)
 			work_interval = dequeue(work_queue);
         }
 
-        free(work_queue);
+        queue_finalize(work_queue);
 	}
 
 	//Send the result to the results queue (to be retreved by the administrator thread)
 	temp_interval = interval_initialize(0, 0, 0, 0, result_area);
 	sem_emqueue(shared_result_queue, temp_interval);
 
-	return NULL;
+	pthread_exit(NULL);
 }
 
 //Second Variant: the threads get the intervals form a shared work queue. When new tasks are generated the threads put thme in this shared work queue.
@@ -143,11 +157,13 @@ void* aq_static_worker_sem_pthread(void *arguments)
 long double aq_dynamic_administrator_sem_pthread(int num_init_tasks, int num_threads, long double left_limit, long double right_limit, long double tolerance, long double (*calc_function) (long double))
 {
 	//Auxiliary variables
-	int i = 0;
-	long double interval_length = 0L, f_left_limit = 0L, f_right_limit = 0L, i_left_limit = 0L, i_right_limit = 0L, interval_area = 0L, final_area = 0L, remaining_interval = 0L;
+	int i = 0, rc = 0;
+	long double interval_length = 0L, f_left_limit = 0L, f_right_limit = 0L, i_left_limit = 0L, i_right_limit = 0L, interval_area = 0L, final_area = 0L;
 	interval *finished_interval = NULL, *temp_interval = NULL;
 	dynamic_worker_thread_arg *arguments = NULL;
 	pthread_t threads[num_threads];
+	pthread_attr_t attr;
+	void *status;
 
 	//Calculates the length of the initial intervals
 	interval_length = (right_limit - left_limit) / num_init_tasks;
@@ -168,32 +184,42 @@ long double aq_dynamic_administrator_sem_pthread(int num_init_tasks, int num_thr
 	//Initialize the queue that will receve the results from the worker threads
 	shared_result_queue = sem_queue_initialize();
 
+	//Initialize and set thread detached attribute
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+
 	//Start the work threads
 	for (i = 0; i < num_threads; ++i)
 	{
 		arguments = (dynamic_worker_thread_arg*) malloc(sizeof(dynamic_worker_thread_arg));
 		arguments->tolerance = tolerance;
 		arguments->calc_function = calc_function;
-		pthread_create(&threads[i], NULL, aq_dynamic_worker_sem_pthread, (void*) arguments);
+		pthread_create(&threads[i], &attr, aq_dynamic_worker_sem_pthread, (void*) arguments);
 	}
 
-	//Gets and consolidates the result
-	remaining_interval = (right_limit - left_limit);
-
-	while(remaining_interval > EPSILON)
+	//Free attribute and wait for the other threads
+	pthread_attr_destroy(&attr);
+	for(i = 0; i < num_threads; i++)
 	{
-		finished_interval = sem_dequeue(shared_result_queue);
+		rc = pthread_join(threads[i], &status);
 
-		if (finished_interval != NULL)
+		if (rc) 
 		{
-			final_area = final_area + finished_interval->area;
-			remaining_interval = remaining_interval - (finished_interval->right_limit - finished_interval->left_limit);
-			free(finished_interval);
+			 printf("ERROR; return code from pthread_join() is %d\n", rc);
+			 exit(-1);
 		}
 	}
 
-	free(shared_work_queue);
-	free(shared_result_queue);
+	finished_interval = sem_dequeue(shared_result_queue);
+	while(finished_interval != NULL)
+	{
+		final_area = final_area + finished_interval->area;
+		free(finished_interval);
+		finished_interval = sem_dequeue(shared_result_queue);
+	}
+
+	sem_queue_finalize(shared_work_queue);
+	sem_queue_finalize(shared_result_queue);
 	return final_area;
 }
 
@@ -208,40 +234,37 @@ void* aq_dynamic_worker_sem_pthread(void *arguments)
 
 	work_interval = sem_dequeue(shared_work_queue);
 
-    while (1)
+    while (work_interval != NULL)
     {
-    	if (work_interval != NULL)
-    	{
-	    	//Calculates the diference between the big area and the sum of the smaller areas
-			mid_point = (work_interval->right_limit + work_interval->left_limit) / 2;
-			f_mid_point = t_arguments->calc_function(mid_point);
-			left_area = calc_trapezoid_area(work_interval->f_left_limit, f_mid_point, mid_point - work_interval->left_limit);			
-			right_area = calc_trapezoid_area(f_mid_point, work_interval->f_right_limit, work_interval->right_limit - mid_point);
-			areas_dif = work_interval->area - (left_area + right_area);
+    	//Calculates the diference between the big area and the sum of the smaller areas
+		mid_point = (work_interval->right_limit + work_interval->left_limit) / 2;
+		f_mid_point = t_arguments->calc_function(mid_point);
+		left_area = calc_trapezoid_area(work_interval->f_left_limit, f_mid_point, mid_point - work_interval->left_limit);			
+		right_area = calc_trapezoid_area(f_mid_point, work_interval->f_right_limit, work_interval->right_limit - mid_point);
+		areas_dif = work_interval->area - (left_area + right_area);
 
-			//If the difference is bellow the tolerance then store the result
-			if (areas_dif <= t_arguments->tolerance)
-			{
-				//Send the result to the results queue (to be retreved by the administrator thread)
-				temp_interval = interval_initialize(work_interval->left_limit, work_interval->right_limit, 0, 0, left_area + right_area);
-				sem_emqueue(shared_result_queue, temp_interval);
+		//If the difference is bellow the tolerance then store the result
+		if (areas_dif <= t_arguments->tolerance)
+		{
+			//Send the result to the results queue (to be retreved by the administrator thread)
+			temp_interval = interval_initialize(work_interval->left_limit, work_interval->right_limit, 0, 0, left_area + right_area);
+			sem_emqueue(shared_result_queue, temp_interval);
 
-			//Else divide the interval in two and send them to the thread work queue
-			} else {
+		//Else divide the interval in two and send them to the thread work queue
+		} else {
 
-				temp_interval = interval_initialize(work_interval->left_limit, mid_point, work_interval->f_left_limit, f_mid_point, left_area);
-		        sem_emqueue(shared_work_queue, temp_interval);
-		        temp_interval = interval_initialize(mid_point, work_interval->right_limit, f_mid_point, work_interval->f_right_limit, right_area);
-		        sem_emqueue(shared_work_queue, temp_interval);
-			}
+			temp_interval = interval_initialize(work_interval->left_limit, mid_point, work_interval->f_left_limit, f_mid_point, left_area);
+	        sem_emqueue(shared_work_queue, temp_interval);
+	        temp_interval = interval_initialize(mid_point, work_interval->right_limit, f_mid_point, work_interval->f_right_limit, right_area);
+	        sem_emqueue(shared_work_queue, temp_interval);
+		}
 
-			free(work_interval);    	
-    	}
+		free(work_interval); 
 
 		//Try to get a new work interval
 		work_interval = sem_dequeue(shared_work_queue);
     }
 
-	return NULL;
+	pthread_exit(NULL);
 }
 

@@ -27,6 +27,32 @@ mon_queue* mon_queue_initialize()
     return q;
 }
 
+void mon_queue_finalize(mon_queue* q)
+{
+	interval *ret = NULL;
+
+	if (q != NULL)
+	{
+		pthread_mutex_destroy(&(q->mutex));
+		pthread_cond_destroy(&(q->condition));
+
+		while (q->first != NULL)
+		{
+			ret = q->first;
+			q->first = q->first->next;			
+
+			if (q->first == NULL)
+			{
+				q->last = NULL;
+			}
+
+			free(ret);
+		}
+
+		free(q);
+	}
+}
+
 //Put a new elemento into the queue
 void mon_emqueue(mon_queue* q, interval* new_interval)
 {	
@@ -38,6 +64,7 @@ void mon_emqueue(mon_queue* q, interval* new_interval)
 
 		q->first = new_interval;
 		q->last = new_interval;
+		q->last->next = NULL;
 
 	} else {
 
@@ -57,12 +84,17 @@ interval* mon_dequeue(mon_queue* q)
 
 	//Begin os monitor region
 	pthread_mutex_lock(&(q->mutex));
-	while (q->first == NULL) {pthread_cond_wait(&(q->condition), &(q->mutex));}
+	//while (q->first == NULL) {pthread_cond_wait(&(q->condition), &(q->mutex));}
 
 	if (q->first != NULL)
 	{
 		ret = q->first;
 		q->first = q->first->next;
+
+		if (q->first == NULL)
+		{
+			q->last = NULL;
+		}
 	}
 	
 	pthread_mutex_unlock(&(q->mutex));

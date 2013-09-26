@@ -1,7 +1,13 @@
-all : test
+all : paqi
 
-test : mon_adaquad.o sem_adaquad.o adaquad.o aqqueue.o mon_aqqueue.o sem_aqqueue.o tests.c
-	gcc -Wall -o test mon_adaquad.o sem_adaquad.o adaquad.o aqqueue.o mon_aqqueue.o sem_aqqueue.o adaquad.h tests.c -lpthread
+paqi : mon_adaquad.o sem_adaquad.o omp_adaquad.o adaquad.o aqqueue.o mon_aqqueue.o sem_aqqueue.o omp_aqqueue.o paqi.c
+	gcc -Wall -o paqi mon_adaquad.o sem_adaquad.o omp_adaquad.o adaquad.o aqqueue.o mon_aqqueue.o sem_aqqueue.o omp_aqqueue.o adaquad.h paqi.c -lpthread -fopenmp
+
+omp_adaquad.o : aqqueue.o omp_aqqueue.o adaquad.o omp_adaquad.c
+	gcc -Wall -c -o omp_adaquad.o aqqueue.o omp_aqqueue.o adaquad.o omp_adaquad.c -fopenmp
+
+omp_aqqueue.o : aqqueue.o omp_aqqueue.c
+	gcc -Wall -c -o omp_aqqueue.o aqqueue.o omp_aqqueue.c -fopenmp
 
 sem_adaquad.o : aqqueue.o sem_aqqueue.o adaquad.o sem_adaquad.c
 	gcc -Wall -c -o sem_adaquad.o aqqueue.o sem_aqqueue.o adaquad.o sem_adaquad.c

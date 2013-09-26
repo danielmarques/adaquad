@@ -27,6 +27,8 @@ interval* dequeue(queue* q);
 
 queue* queue_initialize();
 
+void queue_finalize(queue *q);
+
 interval* interval_initialize(long double left_limit, long double right_limit, long double f_left_limit, long double f_right_limit, long double area);
 
 #endif

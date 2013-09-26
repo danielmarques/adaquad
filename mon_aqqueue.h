@@ -18,4 +18,6 @@ interval* mon_dequeue(mon_queue* q);
 
 mon_queue* mon_queue_initialize();
 
+void mon_queue_finalize(mon_queue* q);
+
 #endif

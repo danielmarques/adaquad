@@ -15,9 +15,34 @@ sem_queue* sem_queue_initialize()
     q->last = NULL;
 
     //Initialize the semafore that controls the queue's mutual exclusion
-	sem_init(&q->semafore, 0, 1);
+	sem_init(&(q->semafore), 0, 1);
 
     return q;
+}
+
+void sem_queue_finalize(sem_queue* q)
+{
+	interval *ret = NULL;
+	
+	if (q != NULL)
+	{
+		sem_destroy(&(q->semafore));
+
+		while (q->first != NULL)
+		{
+			ret = q->first;
+			q->first = q->first->next;			
+
+			if (q->first == NULL)
+			{
+				q->last = NULL;
+			}
+
+			free(ret);
+		}
+
+		free(q);
+	}
 }
 
 //Put a new elemento into the queue
@@ -31,6 +56,7 @@ void sem_emqueue(sem_queue* q, interval* new_interval)
 
 		q->first = new_interval;
 		q->last = new_interval;
+		q->last->next = NULL;
 
 	} else {
 
@@ -54,6 +80,11 @@ interval* sem_dequeue(sem_queue* q)
 	{
 		ret = q->first;
 		q->first = q->first->next;
+
+		if (q->first == NULL)
+		{
+			q->last = NULL;
+		}
 	}
 
 	sem_post(&q->semafore);
